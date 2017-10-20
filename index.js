@@ -12,13 +12,14 @@ function transformAMD(name) {
   return { using: [{ transformation: 'amd', as: name }] };
 }
 
-function webpackify(name, dir) {
-  const fun = new Funnel(path.dirname(require.resolve(name + '/' + dir + '/index.js'), {
+function webpackify(name, indexPath) {
+  const srcPath = path.join(name, indexPath);
+  const fun = new Funnel(path.dirname(require.resolve(srcPath), {
     destDir: name,
     files: ['index.js']
   }));
   return new Webpack([fun], {
-    entry: [name + '/' + dir + '/index.js'],
+    entry: [srcPath],
     output: {
       filename: name + '.js',
       library: name,
@@ -28,7 +29,11 @@ function webpackify(name, dir) {
       new wp.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(EmberAddon.env())
       })
-    ]
+    ],
+    externals: {
+      'react'    : { amd: 'react' },
+      'react-dom': { amd: 'react-dom' }
+    }
   });
 }
 
@@ -37,6 +42,8 @@ module.exports = {
   included: function(app) {
     this._super.included(app);
 
+    app.import('vendor/react.js'                  , transformAMD('react'                  ));
+    app.import('vendor/react-dom.js'              , transformAMD('react-dom'              ));
     app.import('vendor/auth0-js.js'               , transformAMD('auth0'                  ));
     app.import('vendor/auth0-lock.js'             , transformAMD('auth0-lock'             ));
     app.import('vendor/auth0-lock-passwordless.js', transformAMD('auth0-lock-passwordless'));
@@ -52,9 +59,11 @@ module.exports = {
 
       // [XA] use webpack to transform the CommonJS libs to AMD so we can import 'em.
 
-      trees.push(webpackify('auth0-js'               , 'src'));
-      trees.push(webpackify('auth0-lock'             , 'lib'));
-      trees.push(webpackify('auth0-lock-passwordless', 'lib'));
+      trees.push(webpackify('react'                  , 'react.js'));
+      trees.push(webpackify('react-dom'              , 'dist/react-dom.js'));
+      trees.push(webpackify('auth0-js'               , 'src/index.js'));
+      trees.push(webpackify('auth0-lock'             , 'lib/index.js'));
+      trees.push(webpackify('auth0-lock-passwordless', 'lib/index.js'));
 
       return new MergeTrees(trees);
   }
