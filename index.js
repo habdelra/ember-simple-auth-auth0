@@ -60,7 +60,7 @@ module.exports = {
       // [XA] use webpack to transform the CommonJS libs to AMD so we can import 'em.
 
       trees.push(webpackify('react'                  , 'react.js'));
-      trees.push(webpackify('react-dom'              , 'dist/react-dom.js'));
+      trees.push(webpackify('react-dom'              , 'index.js'));
       trees.push(webpackify('auth0-js'               , 'src/index.js'));
       trees.push(webpackify('auth0-lock'             , 'lib/index.js'));
       trees.push(webpackify('auth0-lock-passwordless', 'lib/index.js'));
