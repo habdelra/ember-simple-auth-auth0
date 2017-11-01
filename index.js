@@ -2,10 +2,12 @@
 'use strict';
 
 // var debug = require('broccoli-stew').debug;
-var map = require('broccoli-stew').map;
-var Funnel = require('broccoli-funnel');
-var mergeTrees = require('broccoli-merge-trees');
-var path = require('path');
+const map = require('broccoli-stew').map;
+const Funnel = require('broccoli-funnel');
+const mergeTrees = require('broccoli-merge-trees');
+const path = require('path');
+const existsSync = require('exists-sync');
+const fastbootTransform = require('fastboot-transform');
 
 module.exports = {
   name: 'ember-simple-auth-auth0',
@@ -27,32 +29,25 @@ module.exports = {
   treeForVendor(tree) {
     tree = map(tree, "!*-shim.js", (content) => `if (typeof FastBoot === 'undefined') { ${content} }`);
 
-    var auth0Path = this.parent.bowerDirectory + '/auth0.js/build';
-    var auth0Tree = new Funnel(this.treeGenerator(auth0Path), {
-      include: [ this.app.env === "production" ? "auth0.min.js" : "auth0.js" ]
-    });
-    auth0Tree = map(auth0Tree, function(content) {
-      return 'if (typeof FastBoot === \'undefined\') { ' + content + ' }';
-    });
+    const lockPath = path.join(this.project.root, this.app.bowerDirectory, 'auth0-lock', 'build');
+    const passwordlessPath = path.join(this.project.root, this.app.bowerDirectory, 'auth0-lock-passwordless', 'build');
+    const auth0Path = path.join(this.project.root, this.app.bowerDirectory, 'auth0.js', 'build');
 
-    var lockPath = this.parent.bowerDirectory + '/auth0-lock/build';
-    var lockTree = new Funnel(this.treeGenerator(lockPath), {
-      include: [ this.app.env === "production" ? "lock.min.js" : "lock.js" ]
-    });
-    lockTree = map(lockTree, function(content) {
-      return 'if (typeof FastBoot === \'undefined\') { ' + content + ' }';
-    });
+    let lockVendorLib = fastbootTransform(new Funnel(lockPath, {
+      files: [`lock${this.app.env === "production" ? ".min" : ""}.js`]
+    }));
 
-    var passwordlessPath = this.parent.bowerDirectory + '/auth0-lock-passwordless/build';
-    var passwordlessTree = new Funnel(this.treeGenerator(passwordlessPath), {
-      include: [ this.app.env === "production" ? "lock-passwordless.min.js" : "lock-passwordless.js"],
-    });
-    passwordlessTree = map(passwordlessTree, function(content) {
-      return 'if (typeof FastBoot === \'undefined\') { ' + content + ' }';
-    });
+    let passwordlessVendorLib = fastbootTransform(new Funnel(passwordlessPath, {
+      files: [`lock-passwordless${this.app.env === "production" ? ".min" : ""}.js`]
+    }));
+
+    let auth0VendorLib = fastbootTransform(new Funnel(auth0Path, {
+      files: [`auth0${this.app.env === "production" ? ".min" : ""}.js`]
+    }));
 
     // having problems with the passwordless fastboot guarding, vendoring it for now :-(
-    // return new mergeTrees([tree, auth0Tree, lockTree, passwordlessTree]);
-    return new mergeTrees([tree, auth0Tree, lockTree ]);
+    // return new mergeTrees([tree, lockVendorLib, passwordlessVendorLib, auth0VendorLib]);
+    return new mergeTrees([tree, lockVendorLib, auth0VendorLib]);
   },
 };
+
