@@ -138,6 +138,8 @@ export default Service.extend({
   },
 
   getAuth0LockInstance(options, clientID = null, domain = null) {
+		if (typeof FastBoot !== "undefined") { return; }
+
     clientID = clientID || get(this, 'clientID');
     domain = domain || get(this, 'domain');
     const Auth0LockConstructor = get(this, '_auth0Lock');
@@ -146,6 +148,8 @@ export default Service.extend({
   },
 
   getAuth0Instance(clientID = null, domain = null) {
+		if (typeof FastBoot !== "undefined") { return; }
+
     clientID = clientID || get(this, 'clientID');
     domain = domain || get(this, 'domain');
 
@@ -162,6 +166,8 @@ export default Service.extend({
   },
 
   getAuth0LockPasswordlessInstance(clientID = null, domain = null) {
+		if (typeof FastBoot !== "undefined") { return; }
+
     clientID = clientID || get(this, 'clientID');
     domain = domain || get(this, 'domain');
     const Auth0LockPasswordlessConstructor = get(this, '_auth0LockPasswordless');

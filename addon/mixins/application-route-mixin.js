@@ -84,6 +84,8 @@ export default Mixin.create(ApplicationRouteMixin, {
   },
 
   _getNewUrlHashData() {
+		if (typeof FastBoot !== "undefined") { return RSVP.resolve(); }
+
     const auth0 = get(this, 'auth0').getAuth0Instance();
     return new RSVP.Promise((resolve, reject) => {
       // TODO: Check to see if we cannot parse the hash or check to see which version of auth0 we are using.... ugh
@@ -102,9 +104,10 @@ export default Mixin.create(ApplicationRouteMixin, {
   },
 
   _getDeprecatedUrlHashData() {
+		if (typeof FastBoot !== "undefined") { return RSVP.resolve(); }
+
     return new RSVP.Promise((resolve, reject) => {
 
-      const auth0 = get(this, 'auth0').getAuth0Instance();
       const parsedPayload = auth0.parseHash();
 
       if (parsedPayload && parsedPayload.error && parsedPayload.error_description) {
