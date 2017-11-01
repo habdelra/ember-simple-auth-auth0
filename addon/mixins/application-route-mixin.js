@@ -108,6 +108,7 @@ export default Mixin.create(ApplicationRouteMixin, {
 
     return new RSVP.Promise((resolve, reject) => {
 
+      const auth0 = get(this, 'auth0').getAuth0Instance();
       const parsedPayload = auth0.parseHash();
 
       if (parsedPayload && parsedPayload.error && parsedPayload.error_description) {
